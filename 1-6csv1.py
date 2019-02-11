@@ -5,9 +5,11 @@ filename = "1-6feb.csv"
 date='2019-02-01'
 uid_status='active'
   
+original_row=[]
   
 dict1={}
 dict2={}
+
 # reading csv file 
 with open(filename, 'r') as csvfile: 
 	# creating a csv reader object 
@@ -18,10 +20,16 @@ with open(filename, 'r') as csvfile:
   
 	# extracting each data row one by one 
 	for row in csvreader: 
-		current_uid=row[1]
+		original_row.append(row)
+
+	for i in original_row:
+		current_uid=i[1]
 		#taking uid that are active and of 1st feb 	
-		if(row[9]==uid_status and row[3][0:10]==date):
+		if(i[9]==uid_status and i[3][0:10]==date):
 			dict2[current_uid]='1'
+
+	for j in original_row:
+		current_uid=j[1]
 		#checking if this uid has same uid value as 1st feb and active
 		if(dict2.get(current_uid)=='1'):
 		#checking if dict1 vlaue for the uid exists or not 
@@ -32,11 +40,12 @@ with open(filename, 'r') as csvfile:
 			#incementing the count
 			dict1[current_uid][0]+=1
 			# checking start and end time null
-			if(row[6]!='NULL' and row[7]!='NULL'):
+			if(j[6]!='NULL' and j[7]!='NULL'):
 				dict1[current_uid][1]+=1
 			# check reponse or not correct reponse =(52,200-299)
-			if(dict1[current_uid][2]==0 and (row[4]=='52' or (int(row[4])>=200 and int(row[4])<=299))):
+			if(dict1[current_uid][2]==0 and (j[4]=='52' or (int(j[4])>=200 and int(j[4])<=299))):
 				dict1[current_uid][2]=1
+			if()
 
 	
 #writting the file
