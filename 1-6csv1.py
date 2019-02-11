@@ -2,79 +2,48 @@ import csv
   
 # csv file name 
 filename = "1-6feb.csv"
+date='2019-02-01'
+uid_status='active'
   
-# initializing the titles and rows list 
-rows = [] 
-active_row=[]
   
+dict1={}
+dict2={}
 # reading csv file 
 with open(filename, 'r') as csvfile: 
-    # creating a csv reader object 
-    csvreader = csv.reader(csvfile) 
-      
-    # extracting field names through first row 
-    fields = csvreader.next() 
+	# creating a csv reader object 
+	csvreader = csv.reader(csvfile) 
+	  
+	# extracting field names through first row 
+	fields = csvreader.next() 
   
-    # extracting each data row one by one 
-    for row in csvreader: 
-    	rows.append(row)
-    #taking only active and 1st feb data 
-    for q in rows:
-    	if(q[3][0:10]=='2019-02-01'):
-    		active_row.append(q)
-
-
-    prev_uid=''
-    curent_uid=''
-    report=[]
-    j=0
-
-    for i in active_row:
-		curent_uid=i[1]
-		if(curent_uid!=prev_uid ):
-			report.append(i)
-			# adding three dummy rows
-			report[j].append(0)
-			report[j].append(0)
-			report[j].append(0)
-			#counter tracking unique uid
-			j+=1
-			#intializing all counts for one uid
-			count=0
-			confirmed=0
-			is_confirmed=0
-			count+=1
+	# extracting each data row one by one 
+	for row in csvreader: 
+		current_uid=row[1]
+		#taking uid that are active and of 1st feb 	
+		if(row[9]==uid_status and row[3][0:10]==date):
+			dict2[current_uid]='1'
+		#checking if this uid has same uid value as 1st feb and active
+		if(dict2.get(current_uid)=='1'):
+		#checking if dict1 vlaue for the uid exists or not 
+			if(dict1.get(current_uid,None)==None):
+				dict1[current_uid]=[0,0,0]
+		# if the value for dictionary 1 is not none for any uid increment
+		if(dict1.get(current_uid,None)!=None):
+			#incementing the count
+			dict1[current_uid][0]+=1
 			# checking start and end time null
-			if(i[6]!='NULL' and i[7]!='NULL'):
-				confirmed+=1
+			if(row[6]!='NULL' and row[7]!='NULL'):
+				dict1[current_uid][1]+=1
 			# check reponse or not correct reponse =(52,200-299)
-			if(i[4]=='52' or (int(i[4])>=200 and int(i[4])<=299)):
-				is_confirmed=1
+			if(dict1[current_uid][2]==0 and (row[4]=='52' or (int(row[4])>=200 and int(row[4])<=299))):
+				dict1[current_uid][2]=1
 
-		
-
-		if(curent_uid==prev_uid):
-			#if uid are same
-			count+=1
-			# checking start and end time null
-			if(i[6]!='NULL' and i[7]!='NULL'):
-				confirmed+=1
-			# check reponse or not correct reponse =(52,200-299)
-			if(is_confirmed==0 and (i[4]=='52' or (int(i[4])>=200 and int(i[4])<=299) )):
-				is_confirmed=1
-		#updating the counts in the uniquie uid .(j-1) coz counter already incremented
-		report[j-1][10]=count
-		report[j-1][11]=confirmed
-		report[j-1][12]=is_confirmed
-		#setting the current uid as previous
-		prev_uid=curent_uid
-
+	
 #writting the file
 with open('new.csv', 'w') as csvFile:
-    writer = csv.writer(csvFile)
-    writer.writerows(report)
-
+	writer = csv.writer(csvFile)
+	writer.writerow(['UID','Total Count','Connected','is_confirmed'])
+	for key, value in dict1.items():
+		writer.writerow([key, value[0],value[1],value[2]])
 csvFile.close()
 
-
-    		
