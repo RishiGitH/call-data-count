@@ -3,14 +3,8 @@ import math
 from datetime import datetime
 
 # csv file name 
-filename = "1-6feb.csv"
-date='2019-02-01'
+filename = '21-31jan.csv'
 uid_status='active'
-  
-original_row=[]
-  
-dict1={}
-dict2={}
 
 def check_time_difference(t1,t2):
 	#date and time format
@@ -44,50 +38,74 @@ def check_time_difference(t1,t2):
 	#minutes return
 	return minute
 
-# reading csv file 
-with open(filename, 'r') as csvfile: 
-	# creating a csv reader object 
-	csvreader = csv.reader(csvfile) 
+def cal_all_dates(d1,d2):
+	while(d1<=d2):
+		date='2019-01-'+str(d1)
+		d1+=1
+		d=processing_file(date)
+		write_file(d,date+'.csv')
+
+
+def processing_file(date):
+
+	dict1={}	
+	dict2={}
+
+
+	# reading csv file 
+	with open(filename, 'r') as csvfile: 
+		# creating a csv reader object 
+		csvreader = csv.reader(csvfile) 
+		  
+		# extracting field names through first row 
+		fields = csvreader.next() 
 	  
-	# extracting field names through first row 
-	fields = csvreader.next() 
+		# extracting each data row one by one 
+		for row in csvreader: 
+			original_row.append(row)
+			current_uid=row[1]
+			#taking uid that are active and of 1st feb 	
+			if(row[9]==uid_status and row[3][0:10]==date):
+				dict2[current_uid]='1'
+		csvfile.seek(0)
+		for j in csvreader:
+			current_uid=j[1]
+			#checking if this uid has same uid value as 1st feb and active
+			if(dict2.get(current_uid)=='1'):
+			#checking if dict1 vlaue for the uid does not exist
+				if(dict1.get(current_uid,None)==None):
+					dict1[current_uid]=[0,0,0,0]
+			# if the value for dictionary 1 exist for any uid increment
+			if(dict1.get(current_uid,None)!=None):
+				#incementing the count
+				dict1[current_uid][0]+=1
+				# checking start and end time null
+				if(j[6]!='NULL' and j[7]!='NULL'):
+					dict1[current_uid][1]+=1
+					#Calculating minutes using check function
+					minutes=check_time_difference(j[7],j[6])
+					#adding minutes to current total
+					dict1[current_uid][3]+=minutes
+				# check reponse or not correct reponse =(52,200-299)
+				if(dict1[current_uid][2]==0 and (j[4]=='52' or (int(j[4])>=200 and int(j[4])<=299))):
+					dict1[current_uid][2]=1
+
+	return dict1
+
+def write_file(d13,filename):
+	#writting the file
+	with open(filename, 'w') as csvFile:
+		writer = csv.writer(csvFile)
+		writer.writerow(['UID','Total Count','Connected','is_confirmed','Total Time'])
+		#writing every row for uid and respetive values
+		for key, value in d13.items():
+			writer.writerow([key, value[0],value[1],value[2],value[3]])
+		csvFile.close()
+
+
+if __name__ == '__main__':
+	d1=21
+	d2=31
   
-	# extracting each data row one by one 
-	for row in csvreader: 
-		original_row.append(row)
-		current_uid=row[1]
-		#taking uid that are active and of 1st feb 	
-		if(row[9]==uid_status and row[3][0:10]==date):
-			dict2[current_uid]='1'
+	cal_all_dates(d1,d2)
 
-	for j in original_row:
-		current_uid=j[1]
-		#checking if this uid has same uid value as 1st feb and active
-		if(dict2.get(current_uid)=='1'):
-		#checking if dict1 vlaue for the uid does not exist
-			if(dict1.get(current_uid,None)==None):
-				dict1[current_uid]=[0,0,0,0]
-		# if the value for dictionary 1 exist for any uid increment
-		if(dict1.get(current_uid,None)!=None):
-			#incementing the count
-			dict1[current_uid][0]+=1
-			# checking start and end time null
-			if(j[6]!='NULL' and j[7]!='NULL'):
-				dict1[current_uid][1]+=1
-				#Calculating minutes using check function
-				minutes=check_time_difference(j[7],j[6])
-				#adding minutes to current total
-				dict1[current_uid][3]+=minutes
-			# check reponse or not correct reponse =(52,200-299)
-			if(dict1[current_uid][2]==0 and (j[4]=='52' or (int(j[4])>=200 and int(j[4])<=299))):
-				dict1[current_uid][2]=1
-
-	
-#writting the file
-with open('new12.csv', 'w') as csvFile:
-	writer = csv.writer(csvFile)
-	writer.writerow(['UID','Total Count','Connected','is_confirmed','Total Time'])
-	#writing every row for uid and respetive values
-	for key, value in dict1.items():
-		writer.writerow([key, value[0],value[1],value[2],value[3]])
-csvFile.close()
