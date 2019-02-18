@@ -1,4 +1,4 @@
-# call-data-count
+# Call-data-count
 
 This is a script to perform some analytics function on the provided call data for some given dates
 
@@ -24,7 +24,7 @@ python3 createcsv.py
 
 ## Usage
 
-``
+```
 Enter start date
 2019-02-01
 Enter end date 
