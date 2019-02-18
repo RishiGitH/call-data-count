@@ -1,18 +1,26 @@
 import csv 
 import math 
-from datetime import datetime
+import datetime
+import os
 
 # csv file name 
-filename = '21-31jan.csv'
+#filename = '21-31jan.csv'
 uid_status='active'
+
+def validate(date_text):
+    try:
+        datetime.datetime.strptime(date_text, '%Y-%m-%d')
+        return date_text
+    except ValueError:
+        raise ValueError("Incorrect data format, should be YYYY-MM-DD")
 
 def check_time_difference(t1,t2):
 	#date and time format
 	f = "%Y-%m-%d %H:%M:%S"
-	t1 = datetime.strptime(t1, f)
-	t2 = datetime.strptime(t2, f)
+	t1 = datetime.datetime.strptime(t1, f)
+	t2 = datetime.datetime.strptime(t2, f)
 
-	t1_date = datetime(
+	t1_date = datetime.datetime(
 			t1.year,
 			t1.month,
 			t1.day,
@@ -21,7 +29,7 @@ def check_time_difference(t1,t2):
 			t1.second
 		)
 
-	t2_date = datetime(
+	t2_date = datetime.datetime(
 			t2.year,
 			t2.month,
 			t2.day,
@@ -39,11 +47,14 @@ def check_time_difference(t1,t2):
 	return minute
 
 def cal_all_dates(d1,d2):
-	while(d1<=d2):
-		date='2019-01-'+str(d1)
-		d1+=1
-		d=processing_file(date)
-		write_file(d,date+'.csv')
+	newdate1 = datetime.datetime.strptime(d1, "%Y-%m-%d")
+	newdate2 = datetime.datetime.strptime(d2, "%Y-%m-%d")
+	while(newdate1<=newdate2):
+		c=newdate1.strftime('%Y-%m-%d')
+		d=processing_file(c)
+		write_file(d,c+'.csv')
+		newdate1=newdate1+ datetime.timedelta(days=1)
+
 
 
 def processing_file(date):
@@ -58,11 +69,10 @@ def processing_file(date):
 		csvreader = csv.reader(csvfile) 
 		  
 		# extracting field names through first row 
-		fields = csvreader.next() 
+		fields = next(csvreader) 
 	  
 		# extracting each data row one by one 
 		for row in csvreader: 
-			original_row.append(row)
 			current_uid=row[1]
 			#taking uid that are active and of 1st feb 	
 			if(row[9]==uid_status and row[3][0:10]==date):
@@ -91,6 +101,9 @@ def processing_file(date):
 					dict1[current_uid][2]=1
 
 	return dict1
+def loop():
+	print("ENtered")
+
 
 def write_file(d13,filename):
 	#writting the file
@@ -104,8 +117,21 @@ def write_file(d13,filename):
 
 
 if __name__ == '__main__':
-	d1=21
-	d2=31
-  
-	cal_all_dates(d1,d2)
 
+	print("\033[1;34;40m Enter start date")
+	date1=validate(input())
+	print("Enter end date ")
+	date2=validate(input())
+	files = [f for f in os.listdir('.') if os.path.isfile(f)]
+	print("--FILE OPTIONS--")
+	for f in files:
+		print(f,end=" ")
+	print(" \n Enter File name ")
+	filename=input()
+	if filename.endswith('.csv'):
+		pass
+	else:
+		print("Not a csv file ")
+
+  
+	cal_all_dates(date1,date2)
