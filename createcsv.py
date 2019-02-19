@@ -101,8 +101,6 @@ def processing_file(date):
 					dict1[current_uid][2]=1
 
 	return dict1
-def loop():
-	print("ENtered")
 
 
 def write_file(d13,filename):
